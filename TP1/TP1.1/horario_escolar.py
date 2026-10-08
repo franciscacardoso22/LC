@@ -574,5 +574,17 @@ def _():
     return
 
 
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""
+    ## 9. Declaração de utilização de LLM
+    Na elaboração deste projeto utilizei o assistente de IA CLaude (Anthropic) com os seguintes objetivos:
+    1. **Verificação do trabalho realizado**, em particular a revisão das restrições do modelo e a identificação de possíveis erros.
+    2. **Refatoração do código**, com a ajuda da criação de funções reutilizáveis (`construir_modelo`, `extrair_horario` e `desenhar_grelhas`) para evitar a repetição de código nos cenários H0, H1 e V3.
+    3. **Orientação para a integração** dessas funções no notebook, incluindo a ordem das alterações.
+    """)
+    return
+
+
 if __name__ == "__main__":
     app.run()
