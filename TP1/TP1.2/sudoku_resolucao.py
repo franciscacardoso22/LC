@@ -338,7 +338,7 @@ def _():
             assert False, "Devia ter rejeitado valor fora de [1, n^2]"
         except ValueError:
             pass
-    
+
         return "Requisito R1 validado com sucesso"
 
     test_box()
@@ -375,7 +375,7 @@ def _():
                 raise ValueError(
                     f"Índices de bloco ({bi}, {bj}) fora dos limites permitidos [0, {n - 1}]."
                 )
-            
+        
             self.bi = bi
             self.bj = bj
 
@@ -393,7 +393,7 @@ def _():
         Gera a sequência contínua entre as coordenadas 'start' (r1, c1) e 'end' (r2, c2), inclusive.
         Funciona tanto no sentido direto como no sentido inverso, e apenas para troços puramente horizontais ou verticais.
         """
-    
+
         def __init__(self, start, end, n=3):
             super().__init__(n=n)
             r1, c1 = start
@@ -618,7 +618,7 @@ def _(cp_model):
                         self._process_group(g)
                 else:
                     self._process_group(item)
-    
+
         def _process_group(self, group):
             """Aplica as restrições de um grupo individual ao modelo CSP."""
             self.groups.append(group)
@@ -634,7 +634,7 @@ def _(cp_model):
             for pos, val in group.cells.items():
                 if val is not None:
                     self.model.Add(self.vars[pos] == val)
-    
+
         def solve(self):
             """Resolve o CSP montado.
             Retorna a grelha preenchida como matriz n^2 x n^2 de inteiros,
@@ -642,7 +642,7 @@ def _(cp_model):
             """
             solver = cp_model.CpSolver()
             status = solver.Solve(self.model)
-        
+    
             if status in (cp_model.OPTIMAL, cp_model.FEASIBLE):
                 grid = [
                     [solver.Value(self.vars[(r, c)]) for c in range(self.size)]
@@ -684,7 +684,7 @@ def _(SudokuCSP):
         b_conflito.add(0, 0, val=3)
         b_conflito.add(0, 1, val=3)
         csp_invalido.add_groups(b_conflito)
-    
+
         solucao_invalida = csp_invalido.solve()
         assert (
             solucao_invalida is None
@@ -850,6 +850,20 @@ def _(build_sudoku, generate_random_clues, print_grid):
         return "Requisito R6 concluído com sucesso!"
 
     run_sudoku_demonstration()
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Uso de LLM's
+
+    No âmbito deste trabalho prático, recorreu-se pontualmente a ferramentas de Inteligência Artificial (LLM) como suporte de desenvolvimento nas seguintes tarefas:
+
+    * **Sintaxe da biblioteca OR-Tools:** Consulta dos nomes dos métodos da biblioteca Google OR-Tools para criar variáveis (`NewIntVar`), aplicar a regra de valores diferentes (`AddAllDifferent`) e obter o resultado final (`solver.value`).
+    * **Resolução de erros de código (*debugging*):** Apoio na identificação de erros de sintaxe em Python e mensagens de erro do ambiente Marimo.
+    * **Revisão de texto:** Melhoria da redação das explicações e formatação das fórmulas em Markdown.
+    """)
     return
 
 
