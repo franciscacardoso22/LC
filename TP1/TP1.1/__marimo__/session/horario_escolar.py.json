@@ -1,0 +1,180 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.25.1",
+    "script_metadata_hash": "cdac4f193ea60f385129ed849f93ec6c"
+  },
+  "cells": [
+    {
+      "id": "setup",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Hbol",
+      "code_hash": "f3bb4c07dd003c9ef9c1b17cae8e3dcb",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"trabalho-pratico-11-gerador-de-horario-escolar\">Trabalho Pr\u00e1tico 1.1: Gerador de Hor\u00e1rio Escolar</h1>\n<span class=\"paragraph\">Catarina Rodrigues (a111491)</span>\n<span class=\"paragraph\">Francisca Cardoso (a112105)</span>\n<h2 id=\"1-introducao-e-modelacao-do-problema\">1. Introdu\u00e7\u00e3o e Modela\u00e7\u00e3o do Problema</h2>\n<span class=\"paragraph\">Este projeto visa a constru\u00e7\u00e3o de um hor\u00e1rio escolar otimizado, respeitando um conjunto rigoroso de restri\u00e7\u00f5es de recursos (turmas, professores, salas e tempos letivos) e reagindo dinamicamente a altera\u00e7\u00f5es (constru\u00e7\u00e3o incremental). Optou-se pela utiliza\u00e7\u00e3o do solver CP-SAT da biblioteca OR-Tools por se tratar de uma ferramenta moderna de Programa\u00e7\u00e3o por Restri\u00e7\u00f5es (Constraint Programming), altamente eficiente na gest\u00e3o de restri\u00e7\u00f5es l\u00f3gicas complexas, vari\u00e1veis booleanas e inteiras, superando as abordagens tradicionais de Programa\u00e7\u00e3o Linear Inteira (MIP) em problemas combinat\u00f3rios de hor\u00e1rios escolares.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "90465404d42710aaa126f405c5cc0822",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "167d07c4c094928de012bd44b2486a7d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"2-definicao-do-modelo-matematico\">2. Defini\u00e7\u00e3o do Modelo Matem\u00e1tico</h2>\n<span class=\"paragraph\">Come\u00e7amos por definir os conjuntos do dom\u00ednio do problema:</span>\n<ul>\n<li><marimo-tex class=\"arithmatex\">||(T||)</marimo-tex>: Conjunto de Turmas</li>\n<li><marimo-tex class=\"arithmatex\">||(D||)</marimo-tex>: Dias da semana (Seg a Sex)</li>\n<li><marimo-tex class=\"arithmatex\">||(Per||)</marimo-tex>: Per\u00edodos letivos di\u00e1rios (1 a 5)</li>\n<li><marimo-tex class=\"arithmatex\">||(S||)</marimo-tex>: Conjunto de Salas dispon\u00edveis</li>\n<li><marimo-tex class=\"arithmatex\">||(Prof||)</marimo-tex>: Conjunto de Professores</li>\n<li><marimo-tex class=\"arithmatex\">||(Disc||)</marimo-tex>: Conjunto de Disciplinas do curr\u00edculo</li>\n</ul>\n<span class=\"paragraph\"><strong>Vari\u00e1veis de Decis\u00e3o (<marimo-tex class=\"arithmatex\">||(X||)</marimo-tex>)</strong></span>\n<span class=\"paragraph\">O modelo assenta num dicion\u00e1rio de vari\u00e1veis booleanas. Seja a vari\u00e1vel:</span>\n<marimo-tex class=\"arithmatex\">||[X_{t, disc, p, d, per, s} \\in \\{0,1\\}||]</marimo-tex><span class=\"paragraph\">Assume o valor 1 se a turma <marimo-tex class=\"arithmatex\">||(t||)</marimo-tex> tem aula da disciplina <marimo-tex class=\"arithmatex\">||(disc||)</marimo-tex>, com o professor <marimo-tex class=\"arithmatex\">||(p||)</marimo-tex>, no dia <marimo-tex class=\"arithmatex\">||(d||)</marimo-tex>, per\u00edodo <marimo-tex class=\"arithmatex\">||(per||)</marimo-tex>, na sala <marimo-tex class=\"arithmatex\">||(s||)</marimo-tex>. Assume 0 caso contr\u00e1rio.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "90f1ac1f39aa26464f64e64405800a50",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "46455f4e77c2641f355409ad38b41833",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"3-arquitetura-do-modelo-e-restricoes-r1-a-r7-o1\">3. Arquitetura do Modelo e Restri\u00e7\u00f5es (R1 a R7, O1)</h2>\n<span class=\"paragraph\">As restri\u00e7\u00f5es obrigat\u00f3rias e o objetivo de otimiza\u00e7\u00e3o foram encapsulados na fun\u00e7\u00e3o gen\u00e9rica <code>construir_modelo</code>, garantindo a reutiliza\u00e7\u00e3o de c\u00f3digo entre os hor\u00e1rios gerados:</span>\n<ul>\n<li>\n<span class=\"paragraph\"><strong>R1 e R5:</strong> Nenhuma turma ou professor pode ter aulas em simult\u00e2neo.</span>\n<marimo-tex class=\"arithmatex\">||[\\forall_{t, d, per} \\sum X \\le 1 \\quad \\text{e} \\quad \\forall_{p, d, per} \\sum X \\le 1||]</marimo-tex></li>\n<li>\n<span class=\"paragraph\"><strong>R2:</strong> Cumprimento da carga semanal exata por disciplina.</span>\n<marimo-tex class=\"arithmatex\">||[\\forall_{t, disc} \\sum X = C_{disc}||]</marimo-tex></li>\n<li><strong>R3 e R4:</strong> No m\u00e1ximo uma ocorr\u00eancia di\u00e1ria por disciplina, ou blocos estritamente consecutivos para as de <code>duplo_periodo</code> (aplicado via <code>add_allowed_assignments</code>).</li>\n<li>\n<span class=\"paragraph\"><strong>R6:</strong> Respeito absoluto pelas indisponibilidades dos docentes reportadas nos dados.</span>\n<marimo-tex class=\"arithmatex\">||[\\forall_{(p, d, per) \\in Exc} \\sum X = 0||]</marimo-tex></li>\n<li>\n<span class=\"paragraph\"><strong>R7:</strong> Aloca\u00e7\u00e3o correta a salas normais ou especiais e respeito pelas capacidades m\u00e1ximas simult\u00e2neas de cada sala.</span>\n<marimo-tex class=\"arithmatex\">||[\\forall_{s, d, per} \\sum X \\le Q_s||]</marimo-tex></li>\n<li><strong>O1:</strong> Minimiza\u00e7\u00e3o do total de buracos nos hor\u00e1rios dos professores (<marimo-tex class=\"arithmatex\">||(amplitude - total\\_aulas||)</marimo-tex>).</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "6623b21827158b58667c5a36ae9c8af3",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "a0bca3b893b564bee36f8278ab4220f0",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "d23510a7e3071bfb05fbf1090fdd871f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"4-resolucao-do-horario-base-h0\">4. Resolu\u00e7\u00e3o do Hor\u00e1rio Base (H0)</h2>\n<span class=\"paragraph\">Acionamos o solver CP-SAT para encontrar o hor\u00e1rio base inicial otimizando a minimiza\u00e7\u00e3o de buracos dos docentes (<marimo-tex class=\"arithmatex\">||(O1||)</marimo-tex>). Guardamos as chaves ativas em <code>chaves_h0</code> para servir de \u00e2ncora \u00e0 fase seguinte.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "333f75189f0b7fd1882de8f8c9bd45e0",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "514f9cb99f3ec0918e0aec3a38f06ad2",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"5-construcao-incremental-e-reescalonamento-h1-r9\">5. Constru\u00e7\u00e3o Incremental e Reescalonamento (H1 / R9)</h2>\n<span class=\"paragraph\">Para o hor\u00e1rio H1 (com os novos <code>dados_v2</code>), a estrat\u00e9gia adotada baseia-se na restri\u00e7\u00e3o <marimo-tex class=\"arithmatex\">||(R9||)</marimo-tex>: reaproveitar a estrutura anterior como ponto de partida (<em>hint</em>) e maximizar as aulas que se mant\u00eam inalteradas, garantindo um reescalonamento cir\u00fargico e eficiente.</span>\n<span class=\"paragraph\">Verificou-se que para a altera\u00e7\u00e3o introduzida em <code>dados_v2</code> (nova indisponibilidade da Prof. Ana), o hor\u00e1rio base <marimo-tex class=\"arithmatex\">||(H0||)</marimo-tex> j\u00e1 respeitava a restri\u00e7\u00e3o, resultando em 0 aulas alteradas e num tempo de reescalonamento inferior a 0.05 segundos. Caso o modelo fosse resolvido inteiramente do zero, o solver descartaria a estrutura anterior e exigiria uma nova busca exaustiva, comprovando-se assim a vantagem da otimiza\u00e7\u00e3o por re-ancoragem.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "0766d69190fb48a7c051e0aebaea26fb",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "9947bb5d2b90365d66d4db092f4e7173",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"6-cenario-inedito-dados_v3\">6. Cen\u00e1rio In\u00e9dito (dados_v3)</h2>\n<span class=\"paragraph\">Para testar a robustez e provar a aus\u00eancia de elementos fixos no c\u00f3digo (<em>hardcoding</em>), aplicamos o nosso modelo modular a um novo conjunto de dados completo presente em <code>dados_v3</code>, validando a capacidade de generaliza\u00e7\u00e3o do algoritmo perante novas turmas, professores e espa\u00e7os escolares.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "a8ed4fa3097a6f98f6c2dca3c39cd999",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "8a74586a01301b98e9c9fb3d7f221afa",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"7-verificacao-automatica-do-modelo\">7. Verifica\u00e7\u00e3o Autom\u00e1tica do Modelo</h2>\n<span class=\"paragraph\">Apresentamos um auditor din\u00e2mico em Pandas que valida de forma cega o cumprimento rigoroso das restri\u00e7\u00f5es <strong>R1 a R7</strong> para todos os hor\u00e1rios gerados (<marimo-tex class=\"arithmatex\">||(H0||)</marimo-tex>, <marimo-tex class=\"arithmatex\">||(H1||)</marimo-tex> e <marimo-tex class=\"arithmatex\">||(V3||)</marimo-tex>). Para demonstrar a efic\u00e1cia da dete\u00e7\u00e3o de falhas desta ferramenta, inclu\u00edmos um <strong>Teste Negativo</strong> alimentado com um hor\u00e1rio corrompido propositadamente atrav\u00e9s da duplica\u00e7\u00e3o manual de inst\u00e2ncias.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "iLit",
+      "code_hash": "5b207d34e62ae0c02da343ab3448c1a0",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "95d092607994208dabdf8f153111f88c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"8-conclusao-e-limitacoes-do-modelo\">8. Conclus\u00e3o e Limita\u00e7\u00f5es do Modelo</h2>\n<span class=\"paragraph\">O presente trabalho pr\u00e1tico demonstrou com sucesso a aplica\u00e7\u00e3o de Programa\u00e7\u00e3o por Restri\u00e7\u00f5es (atrav\u00e9s do solver CP-SAT) \u00e0 resolu\u00e7\u00e3o de um problema cl\u00e1ssico e denso de escalonamento: a cria\u00e7\u00e3o de hor\u00e1rios escolares.</span>\n<span class=\"paragraph\"><strong>Principais Resultados Alcan\u00e7ados:</strong></span>\n<ul>\n<li><strong>Robustez e Dinamismo:</strong> O modelo matem\u00e1tico implementado respeita estritamente todas as restri\u00e7\u00f5es obrigat\u00f3rias (R1 a R8). Ao extrair os dados dinamicamente de ficheiros CSV, o c\u00f3digo garante que n\u00e3o existem vari\u00e1veis fixas (<em>hardcoded</em>), adaptando-se a qualquer curr\u00edculo, lota\u00e7\u00e3o de salas ou indisponibilidade.</li>\n<li><strong>Reescalonamento Eficiente (R9):</strong> A abordagem de constru\u00e7\u00e3o incremental revelou-se altamente eficaz. Ao injetar o hor\u00e1rio base (<marimo-tex class=\"arithmatex\">||(H0||)</marimo-tex>) como ponto de partida (<em>hint</em>) e maximizar a intersec\u00e7\u00e3o de aulas mantidas, o modelo consegue acomodar imprevistos de recursos de forma cir\u00fargica, evitando a restrutura\u00e7\u00e3o desnecess\u00e1ria de todo o ecossistema escolar.</li>\n<li><strong>Auditoria Autom\u00e1tica:</strong> A constru\u00e7\u00e3o de um validador program\u00e1tico em Pandas garante a fiabilidade e integridade dos resultados, provando de forma transparente e automatizada que nenhuma restri\u00e7\u00e3o l\u00f3gica foi violada.</li>\n</ul>\n<span class=\"paragraph\"><strong>Limita\u00e7\u00f5es e Escalabilidade:</strong>\nApesar da grande efic\u00e1cia do modelo, a componente de otimiza\u00e7\u00e3o (<marimo-tex class=\"arithmatex\">||(O1||)</marimo-tex> - minimiza\u00e7\u00e3o de \"buracos\" no hor\u00e1rio dos docentes) acarreta um custo computacional significativo. O c\u00e1lculo da amplitude de trabalho obriga \u00e0 cria\u00e7\u00e3o de m\u00faltiplas vari\u00e1veis de controlo auxiliares (<marimo-tex class=\"arithmatex\">||(5 \\times D \\times Prof||)</marimo-tex>). Embora o solver resolva os cen\u00e1rios de teste (<marimo-tex class=\"arithmatex\">||(H0||)</marimo-tex>, <marimo-tex class=\"arithmatex\">||(H1||)</marimo-tex>, <marimo-tex class=\"arithmatex\">||(V3||)</marimo-tex>) em fra\u00e7\u00f5es de segundo, a extrapola\u00e7\u00e3o deste objetivo estrito para uma escola real com centenas de turmas e professores levaria a uma explos\u00e3o combinat\u00f3ria. Em ambientes de escala massiva, seria necess\u00e1rio impor limites de tempo de pesquisa rigorosos ou adotar uma abordagem heur\u00edstica relaxada para a otimiza\u00e7\u00e3o.</span>\n<span class=\"paragraph\">Em suma, a solu\u00e7\u00e3o desenvolvida cumpre com rigor os requisitos exigidos, apresentando-se como uma ferramenta de L\u00f3gica Computacional modular, elegante e altamente adapt\u00e1vel.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "779f44b59cb69620758f92e3b4e62854",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"9-declaracao-de-utilizacao-de-llm\">9. Declara\u00e7\u00e3o de utiliza\u00e7\u00e3o de LLM</h2>\n<span class=\"paragraph\">Na elabora\u00e7\u00e3o deste projeto utilizei o assistente de IA CLaude (Anthropic) com os seguintes objetivos:</span>\n<ol>\n<li><strong>Verifica\u00e7\u00e3o do trabalho realizado</strong>, em particular a revis\u00e3o das restri\u00e7\u00f5es do modelo e a identifica\u00e7\u00e3o de poss\u00edveis erros.</li>\n<li><strong>Refatora\u00e7\u00e3o do c\u00f3digo</strong>, com a ajuda da cria\u00e7\u00e3o de fun\u00e7\u00f5es reutiliz\u00e1veis (<code>construir_modelo</code>, <code>extrair_horario</code> e <code>desenhar_grelhas</code>) para evitar a repeti\u00e7\u00e3o de c\u00f3digo nos cen\u00e1rios H0, H1 e V3.</li>\n<li><strong>Orienta\u00e7\u00e3o para a integra\u00e7\u00e3o</strong> dessas fun\u00e7\u00f5es no notebook, incluindo a ordem das altera\u00e7\u00f5es.</li>\n</ol></span>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}
