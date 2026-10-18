@@ -14,4 +14,4 @@ Project 1 addresses combinatorial allocation and constraint modeling across two 
   * Specialization into sub-grid blocks (`cube`) and linear rows/columns (`path`).
   * Random clue generation within $[1, n^2]$ relying on the base `box` interface.
   * Formulation of the complete grid CSP without fixed-dimension assumptions (supporting $n=3$, $n=2$, and variant topologies).
-* **Deliverable:** Interactive Marimo notebook (`sudoku.py`).
+* **Deliverable:** Interactive Marimo notebook (`sudoku_resolucao.py`).

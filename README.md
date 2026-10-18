@@ -1,7 +1,7 @@
 # Computational Logic
-Repository containig practical and solver implementaions developed for the **Computacional Logic** course.
+Repository containing practical assignments and solver implementations developed for the **Computational Logic** course.
 
-The assigments explore the **satisfiability approach** - modeling discrete optimization and dynamic verification problems declaratively using automed engines (e.g., CP-SAT, SMT).
+The assignments explore the **satisfiability approach** — modeling discrete optimization and dynamic verification problems declaratively using automated engines (e.g., CP-SAT, SMT).
 
 ---
 ## Projects
@@ -14,6 +14,5 @@ The assigments explore the **satisfiability approach** - modeling discrete optim
 
 ---
 ## Authors
-Catarina Rodrigues A111491
-
+Catarina Rodrigues A111491  
 Francisca Cardoso A112105
